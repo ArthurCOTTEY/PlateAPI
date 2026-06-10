@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\TokenResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,16 +24,24 @@ class TokenController extends Controller
             ]);
         }
         ApiLogsController::addLog($request, $user->email, $user->id);
-        return $user->createToken($request->app_name)->plainTextToken;
+        return response()->json([
+            'token' => $user->createToken($request->app_name)->plainTextToken,
+        ], 201);
+    }
+
+    public function sessions(Request $request) {
+        return TokenResource::collection(Auth::user()->tokens()->get());
     }
 
     public function destroy(Request $request) {
         ApiLogsController::addLog($request);
         Auth::user()->currentAccessToken()->delete();
+        return response()->noContent();
     }
 
     function destroyAll(Request $request) {
         ApiLogsController::addLog($request);
         Auth::user()->tokens()->delete();
+        return response()->noContent();
     }
 }
