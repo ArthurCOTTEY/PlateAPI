@@ -10,6 +10,7 @@ use App\Models\PlateTransfersHistory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Auth;
 
 class PlateController extends Controller
 {
