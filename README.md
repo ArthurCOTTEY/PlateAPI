@@ -20,6 +20,106 @@ L’API permet de gérer :
 
 ---
 
+## Installation et lancement du projet
+
+### Cloner le projet
+
+```bash
+git clone https://github.com/ArthurCOTTEY/PlateAPI.git
+```
+
+### Accéder au dossier du projet
+
+```bash
+cd PlateAPI
+```
+
+### Installer les dépendances PHP
+
+```bash
+composer install
+```
+
+### Créer le fichier d’environnement
+
+Sous Windows, utiliser la commande suivante :
+
+```cmd
+copy .env.example .env
+```
+
+Sous Linux ou macOS :
+
+```bash
+cp .env.example .env
+```
+
+### Générer la clé de l’application
+
+```bash
+php artisan key:generate
+```
+
+### Exécuter les migrations et les seeders
+
+```bash
+php artisan migrate --seed
+```
+
+Cette commande permet de créer les tables en base de données et d’insérer les données par défaut.
+
+### Lancer le serveur Laravel
+
+```bash
+php artisan serve
+```
+
+L’application sera ensuite disponible à l’adresse indiquée dans le terminal, généralement :
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+## Compte administrateur par défaut
+
+Après l’exécution des seeders, un compte administrateur est créé par défaut.
+
+| Champ        | Valeur              |
+| ------------ | ------------------- |
+| Email        | `admin@example.com` |
+| Mot de passe | `password`          |
+
+Exemple de connexion API :
+
+```json
+{
+  "email": "admin@example.com",
+  "password": "password",
+  "app_name": "MonApplication"
+}
+```
+
+---
+
+## Documentation API générée
+
+Une documentation générée de l’API est disponible à l’adresse suivante :
+
+```text
+{{APP_URL}}/docs
+```
+
+Exemple en local :
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+
 ## Authentification API
 
 L’API utilise **Laravel Sanctum** pour gérer l’authentification par token.
