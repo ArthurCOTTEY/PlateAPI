@@ -1,58 +1,224 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Authentification API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+L’API utilise **Laravel Sanctum** pour gérer l’authentification par token.
 
-## About Laravel
+Les routes ci-dessous permettent de créer un token d’accès, de supprimer le token actuellement utilisé ou de supprimer tous les tokens d’un utilisateur connecté.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Créer un token
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Endpoint
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```http
+POST /api/token/create
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### Description
 
-## Contributing
+Cette route permet à un utilisateur de générer un token d’accès API à partir de son adresse email, de son mot de passe et du nom de l’application utilisée.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Si les identifiants sont corrects, un token Sanctum est créé et retourné en réponse.
 
-## Code of Conduct
+### Paramètres attendus
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Champ      | Type   | Obligatoire | Description                                       |
+| ---------- | ------ | ----------- | ------------------------------------------------- |
+| `email`    | string | Oui         | Adresse email de l’utilisateur                    |
+| `password` | string | Oui         | Mot de passe de l’utilisateur                     |
+| `app_name` | string | Oui         | Nom de l’application ou du client utilisant l’API |
 
-## Security Vulnerabilities
+### Exemple de requête
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```json
+{
+  "email": "user@example.com",
+  "password": "password",
+  "app_name": "MonApplication"
+}
+```
 
-## License
+### Exemple de réponse
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```text
+1|abcdef123456789...
+```
+
+Le token retourné doit ensuite être utilisé dans les requêtes protégées avec l’en-tête suivant :
+
+```http
+Authorization: Bearer 1|abcdef123456789...
+```
+
+### Erreurs possibles
+
+Si les identifiants sont incorrects, l’API retourne une erreur de validation :
+
+```json
+{
+  "message": "The provided credentials are incorrect.",
+  "errors": {
+    "email": [
+      "The provided credentials are incorrect."
+    ]
+  }
+}
+```
+
+---
+
+## Supprimer le token actuel
+
+### Endpoint
+
+```http
+DELETE /api/token/destroy
+```
+
+### Description
+
+Cette route permet de supprimer uniquement le token actuellement utilisé pour authentifier la requête.
+
+Elle est utile pour déconnecter un utilisateur d’un appareil ou d’une application spécifique sans supprimer ses autres tokens actifs.
+
+### Authentification requise
+
+Oui.
+
+La requête doit contenir un token valide dans l’en-tête :
+
+```http
+Authorization: Bearer {token}
+```
+
+### Exemple de requête
+
+```http
+DELETE /api/token/destroy
+Authorization: Bearer 1|abcdef123456789...
+```
+
+### Exemple de réponse
+
+Cette route ne retourne pas de contenu particulier si la suppression réussit.
+
+---
+
+## Supprimer tous les tokens
+
+### Endpoint
+
+```http
+DELETE /api/token/destroy/all
+```
+
+### Description
+
+Cette route permet de supprimer tous les tokens associés à l’utilisateur connecté.
+
+Elle est utile pour déconnecter l’utilisateur de tous ses appareils ou révoquer tous ses accès API.
+
+### Authentification requise
+
+Oui.
+
+La requête doit contenir un token valide dans l’en-tête :
+
+```http
+Authorization: Bearer {token}
+```
+
+### Exemple de requête
+
+```http
+DELETE /api/token/destroy/all
+Authorization: Bearer 1|abcdef123456789...
+```
+
+### Exemple de réponse
+
+Cette route ne retourne pas de contenu particulier si la suppression réussit.
+
+---
+
+## Créer une plaque d’immatriculation
+
+### Endpoint
+
+```http
+POST /api/plate/create
+```
+
+### Description
+
+Cette route permet de créer une nouvelle plaque d’immatriculation pour l’utilisateur authentifié.
+
+La route est protégée par **Laravel Sanctum**, ce qui signifie que l’utilisateur doit envoyer un token valide dans l’en-tête `Authorization`.
+
+Lors de la création, le numéro de plaque est généré automatiquement côté serveur, et la plaque est associée à l’utilisateur connecté grâce à son token d’authentification.
+
+### Authentification requise
+
+Oui.
+
+La requête doit contenir un token valide dans l’en-tête :
+
+```http
+Authorization: Bearer {token}
+```
+
+### Paramètres attendus
+
+Aucun paramètre n’est nécessaire dans le body de la requête.
+
+### Exemple de requête
+
+```http
+POST /api/plate/create
+Authorization: Bearer 1|abcdef123456789...
+```
+
+### Exemple de réponse
+
+```json
+{
+  "id": 1,
+  "license_plate_number": "CA-812-AA",
+  "user_id": 1,
+  "created_at": "2026-06-10T12:00:00.000000Z",
+  "updated_at": "2026-06-10T12:00:00.000000Z"
+}
+```
+
+### Erreurs possibles
+
+Si le token est absent, invalide ou expiré, l’API retourne une erreur d’authentification :
+
+```json
+{
+  "message": "Unauthenticated."
+}
+```
+
+---
+
+
+## Journalisation des appels API
+
+À chaque appel sur ces routes, une entrée est ajoutée dans les logs API grâce à la méthode :
+
+```php
+ApiLogsController::addLog($request, $user->email);
+```
+
+Cela permet de garder une trace des actions effectuées sur les tokens, comme la création ou la suppression d’un accès API.
+
+---
+
+## Résumé des routes
+
+| Méthode  | Endpoint                 | Authentification | Description                                        |
+| -------- | ------------------------ | ---------------- | -------------------------------------------------- |
+| `POST`   | `/api/token/create`      | Non              | Crée un token d’accès API                          |
+| `DELETE` | `/api/token/destroy`     | Oui              | Supprime le token actuellement utilisé             |
+| `DELETE` | `/api/token/destroy/all` | Oui              | Supprime tous les tokens de l’utilisateur connecté |
