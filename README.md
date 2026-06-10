@@ -119,6 +119,56 @@ http://127.0.0.1:8000/docs
 
 ---
 
+## Tests
+
+Le projet utilise **PHPUnit** pour tester les fonctionnalités principales de l’API.
+
+Les tests permettent de vérifier que les routes importantes fonctionnent correctement, que les accès protégés nécessitent bien une authentification, et que les données sont correctement créées ou modifiées en base de données.
+
+### Lancer tous les tests
+
+```bash
+php artisan test
+```
+
+### Lancer un fichier de test précis
+
+```bash
+php artisan test tests/Feature/TokenControllerTest.php
+```
+
+### Lancer une classe de test précise
+
+```bash
+php artisan test --filter=TokenControllerTest
+```
+
+### Lancer une méthode de test précise
+
+```bash
+php artisan test --filter=test_user_can_create_token_with_valid_credentials
+```
+
+### Tests actuellement couverts
+
+Les tests couvrent notamment :
+
+* la création de tokens d’accès ;
+* la validation des identifiants utilisateur ;
+* l’accès aux routes protégées ;
+* la consultation et la mise à jour du compte utilisateur ;
+* la création, la consultation et la pagination des plaques ;
+* le transfert de plaques entre utilisateurs ;
+* l’historique des transferts ;
+* la création des logs API.
+
+Avant de modifier une fonctionnalité importante, il est conseillé de lancer les tests afin de vérifier que le comportement existant n’a pas été cassé.
+
+```bash
+php artisan test
+```
+
+---
 
 ## Authentification API
 
