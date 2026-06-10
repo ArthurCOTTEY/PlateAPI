@@ -7,13 +7,16 @@ use App\Http\Controllers\TokenController;
 Route::post('/tokens/create', [TokenController::class, 'create']);
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
-    Route::prefix('/tokens/destroy')->group(function () {
-        Route::delete('', [TokenController::class, 'destroy']);
-        Route::delete('/all', [TokenController::class, 'destroyAll']);
+    Route::prefix('/tokens')->group(function () {
+        Route::get('/sessions', [TokenController::class, 'sessions']);
+        Route::prefix('/destroy')->group(function () {
+            Route::delete('', [TokenController::class, 'destroy']);
+            Route::delete('/all', [TokenController::class, 'destroyAll']);
+        });
     });
 
     Route::prefix('/account')->group(function () {
-        Route::get('/', [AccountController::class, 'index']);
+        Route::get('/', [AccountController::class, 'show']);
         Route::get('/actions', [AccountController::class, 'actions']);
         Route::patch('/update', [AccountController::class, 'update']);
     });
