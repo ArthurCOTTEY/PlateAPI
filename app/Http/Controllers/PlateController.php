@@ -4,11 +4,48 @@ namespace App\Http\Controllers;
 
 use App\Models\Plate;
 use App\Models\User;
+use App\Models\PlateTransfersHistory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PlateController extends Controller
 {
+    public function all(Request $request) {
+        ApiLogsController::addLog($request);
+        return Plate::where('user_id', Auth::id())->get();
+    }
+
+    public function create(Request $request) {
+        ApiLogsController::addLog($request);
+        return Plate::create([]);
+    }
+
+    public function transfer(Request $request) {
+        ApiLogsController::addLog($request);
+        $request->validate([
+            'plate_id' => 'required|integer|exists:plates,id',
+            'to_user_id' => 'required|integer|exists:users,id',
+        ]);
+        Plate::where('user_id', Auth::id())->find($request->plate_id)->update(['user_id' => $request->to_user_id]);
+        PlateTransfersHistory::create([
+            'plate_id' => $request->plate_id,
+            'to_user_id' => $request->to_user_id,
+        ]);
+    }
+
+    public function transferHistory(Request $request, Plate $plate) {
+        ApiLogsController::addLog($request);
+        abort_if($plate->user_id !== Auth::id(), 403);
+        return $plate->plateTransfersHistory()->latest('transferred_at')->get();
+    }
+
+    public function show(Request $request, Plate $plate) {
+        ApiLogsController::addLog($request);
+        abort_if($plate->user_id !== Auth::id(), 403);
+        return $plate;
+    }
+
     public static function generate(): string
     {
         $lastPlate = Plate::select('license_plate_number')->orderBy('id','desc')->first();
