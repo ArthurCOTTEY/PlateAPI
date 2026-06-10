@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\PlateResource;
+use App\Http\Resources\PlateTransfersHistoriesResource;
 use App\Models\Plate;
 use App\Models\User;
 use App\Models\PlateTransfersHistory;
@@ -13,37 +15,70 @@ class PlateController extends Controller
 {
     public function all(Request $request) {
         ApiLogsController::addLog($request);
-        return Plate::where('user_id', Auth::id())->get();
+        return PlateResource::collection(Plate::where('user_id', Auth::id())->paginate(10));
+    }
+
+    public function show(Request $request, int $id)
+    {
+        $plate = Plate::where('user_id', Auth::id())
+            ->where('id', $id)
+            ->first();
+        if (!$plate) {
+            return response()->json([
+                'message' => 'Plate not found'
+            ], 404);
+        }
+        ApiLogsController::addLog($request);
+        return new PlateResource($plate);
     }
 
     public function create(Request $request) {
+        $plate = Plate::create([]);
         ApiLogsController::addLog($request);
-        return Plate::create([]);
+        return new PlateResource($plate);
     }
 
     public function transfer(Request $request) {
-        ApiLogsController::addLog($request);
         $request->validate([
             'plate_id' => 'required|integer|exists:plates,id',
             'to_user_id' => 'required|integer|exists:users,id',
         ]);
-        Plate::where('user_id', Auth::id())->find($request->plate_id)->update(['user_id' => $request->to_user_id]);
+        $plate = Plate::where('user_id', Auth::id())->find($request->plate_id);
+        if (!$plate) {
+            return response()->json([
+                'message' => 'Plate not found'
+            ], 404);
+        }
+        $plate->user_id = $request->to_user_id;
+        $plate->save();
         PlateTransfersHistory::create([
             'plate_id' => $request->plate_id,
             'to_user_id' => $request->to_user_id,
         ]);
+        ApiLogsController::addLog($request);
+        return response()->json([
+            'message' => 'Plate transferred successfully',
+            'plate_id' => $plate->id,
+            'license_plate_number' => $plate->license_plate_number,
+        ], 200);
     }
 
-    public function transferHistory(Request $request, Plate $plate) {
+    public function transferHistory(Request $request, int $id)
+    {
+        $plate = Plate::where('user_id', Auth::id())
+            ->where('id', $id)
+            ->first();
+        if (!$plate) {
+            return response()->json([
+                'message' => 'Plate not found',
+            ], 404);
+        }
         ApiLogsController::addLog($request);
-        abort_if($plate->user_id !== Auth::id(), 403);
-        return $plate->plateTransfersHistory()->latest('transferred_at')->get();
-    }
-
-    public function show(Request $request, Plate $plate) {
-        ApiLogsController::addLog($request);
-        abort_if($plate->user_id !== Auth::id(), 403);
-        return $plate;
+        return PlateTransfersHistoriesResource::collection(
+            $plate->plateTransfersHistory()
+                ->latest('transferred_at')
+                ->get()
+        );
     }
 
     public static function generate(): string

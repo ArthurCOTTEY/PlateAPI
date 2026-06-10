@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Http\Controllers\PlateController;
 use App\Models\Plate;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,8 +20,8 @@ class PlateFactory extends Factory
     public function definition(): array
     {
         return [
-            'license_plate_number' => PlateController::generate(),
-            'user_id' => 1
+            'license_plate_number' => strtoupper(fake()->unique()->bothify('??-###-??')),
+            'user_id' => User::factory(),
         ];
     }
 }
