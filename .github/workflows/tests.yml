@@ -33,6 +33,12 @@ jobs:
       - name: Générer la clé Laravel
         run: php artisan key:generate
 
+      - name: Vérifier PHP et extensions
+        run: |
+          php -v
+          php -m
+          php artisan about
+
       - name: Lancer les tests
         run: php artisan test
         env:
